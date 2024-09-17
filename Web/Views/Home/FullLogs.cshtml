@@ -1,0 +1,234 @@
+﻿@using Web.Controllers
+@model FullLogsModel
+@{
+    ViewData["Title"] = "Logs";
+    var idCounter = 0;
+}
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="~/css/JobResults.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/FullLogs.css" asp-append-version="true" />
+<div class="container">
+    <div class="d-flex justify-content-between mb-4 align-items-end flex-column flex-md-row">
+        <h1 class="mt-5">Logs by date @Model.chooseDate for @Model.BigJob.JobName:</h1>
+        <div class="logsContainer mt-3 mt-md-0">
+            <button id="archiveButton" class="btn btn-primary ml-2">Archive logs</button>
+            <div class="checkboxLogs mt-2">
+                <input type="checkbox" id="deleteLogsCheckbox" class="form-check-input">
+                <label class="form-check-label checkboxLogsLabel" for="deleteLogsCheckbox">Delete logs after archiving</label>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between mb-4 flex-column flex-md-row">
+        <div class="pagination-container mb-3 mb-md-0">
+            @if (Model.pageCount != 0 && Model.pageCount != 1)
+            {
+                <nav aria-label="Page navigation">
+                    <ul class="pagination">
+                        <li class="page-item @(Model.selectedPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="/Home/FullLogs?jobId=@Model.BigJob.BigJobId&page=@(Model.selectedPage - 1)@(Model.chooseDate.HasValue ? $"&searchDate={Model.chooseDate.Value.ToString("yyyy-MM-dd")}" : "")" aria-label="Prev">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        @{
+                            int startPage = Math.Max(1, Model.selectedPage - 1);
+                            int endPage = Math.Min(Model.pageCount, Model.selectedPage + 1);
+
+                            if (startPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="/Home/FullLogs?jobId=@Model.BigJob.BigJobId&page=1@(Model.chooseDate.HasValue ? $"&searchDate={Model.chooseDate.Value.ToString("yyyy-MM-dd")}" : "")">1</a>
+                                </li>
+                                if (startPage > 2)
+                                {
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                }
+                            }
+
+                            for (int i = startPage; i <= endPage; i++)
+                            {
+                                <li class="page-item @(Model.selectedPage == i ? "active" : "")">
+                                    <a class="page-link" href="/Home/FullLogs?jobId=@Model.BigJob.BigJobId&page=@i@(Model.chooseDate.HasValue ? $"&searchDate={Model.chooseDate.Value.ToString("yyyy-MM-dd")}" : "")">@i</a>
+                                </li>
+                            }
+
+                            if (endPage < Model.pageCount)
+                            {
+                                if (endPage < Model.pageCount - 1)
+                                {
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                }
+                                <li class="page-item">
+                                    <a class="page-link" href="/Home/FullLogs?jobId=@Model.BigJob.BigJobId&page=@Model.pageCount@(Model.chooseDate.HasValue ? $"&searchDate={Model.chooseDate.Value.ToString("yyyy-MM-dd")}" : "")">@Model.pageCount</a>
+                                </li>
+                            }
+                        }
+                        <li class="page-item @(Model.selectedPage == Model.pageCount ? "disabled" : "")">
+                            <a class="page-link" href="/Home/FullLogs?jobId=@Model.BigJob.BigJobId&page=@(Model.selectedPage + 1)@(Model.chooseDate.HasValue ? $"&searchDate={Model.chooseDate.Value.ToString("yyyy-MM-dd")}" : "")" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        </div>
+        <div class="input-group datepicker-container">
+            <input type="date" class="form-control datePicker" id="searchDate">
+            <div>
+                <button class="btn btn-primary" type="button" id="searchButton">Search</button>
+                <a class="btn btn-secondary" href="/Home/FullLogs?jobId=@Model.BigJob.BigJobId">Reset</a>
+            </div>
+        </div>
+    </div>
+    @if (Model.pageCount == 0 && Model.Responses.Count == 0)
+    {
+        <h3>No logs for this date</h3>
+    }
+    @foreach (var resp in Model.Responses)
+    {
+        <div class="col-md-13">
+            <div class="task-panel" data-toggle="collapse" data-target="#task-details-@idCounter">
+                <div class="mainSpaces">
+                    <div class="statusLabel task-name">Job exec time:</div>
+                    <div class="statusValue">@resp.StartTime</div>
+                </div>
+                <div class="mainSpaces">
+                    <div class="statusLabel task-name">Status:</div>
+                    @if (resp.Status != "Everything OK")
+                    {
+                        <div class="statusValue WrongStatus">@resp.Status</div>
+                    }
+                    else
+                    {
+                        <div class="statusValue OkStatus">@resp.Status</div>
+                    }
+                </div>
+                <span class="decoration">&gt;</span>
+            </div>
+            <div id="task-details-@idCounter" class="collapse task-details">
+                <div class="JobHead">
+                    <div class="mainSpaces" id="headDuration">
+                        <div class="statusLabel task-name">Duration:</div>
+                        <div class="statusValue">@resp.ExecutionDuration ms</div>
+                    </div>
+
+                    <div class="mainSpaces" id="headDuration">
+                        <div class="statusLabel task-name">StartTime:</div>
+                        <div class="statusValue">@resp.StartTime</div>
+                    </div>
+                </div>
+                @foreach (var miniJob in resp.ResponsesList)
+                {
+                    <div class="dataSpaces">
+                        <div class="statusLabel task-name">For</div>
+                        <a class="statusValue">@miniJob.JobID</a>
+                    </div>
+                    <div class="mainSpaces">
+                        <div class="statusLabel task-name">Status:</div>
+                        @if (@miniJob.Status == "OK")
+                        {
+                            <div class="statusValue OkStatus"> @miniJob.Status</div>
+                        }
+                        else
+                        {
+                            <div class="statusValue WrongStatus">@miniJob.Status</div>
+                        }
+                    </div>
+                    <div class="mainSpaces">
+                        <div class="statusLabel task-name">Duration:</div>
+                        <div class="statusValue">@miniJob.ExecutionDuration ms</div>
+                    </div>
+                    <div class="headers">
+                        <div class="task-name but">Header:</div>
+                        <div class="header-container" style="display: none;">@miniJob.Header</div>
+                    </div>
+                    <div class="bodies">
+                        <div class="task-name but">Body:</div>
+                        <div class="body-container" style="display: none;">@miniJob.Body</div>
+                    </div>
+                }
+            </div>
+        </div>
+        idCounter++;
+    }
+</div>
+
+<script>
+    var tasks = document.querySelectorAll('.headers');
+    var bodies = document.querySelectorAll('.bodies');
+    tasks.forEach(function (task1) {
+        var header = task1.querySelector('.task-name');
+        var container = task1.querySelector('.header-container');
+
+        header.addEventListener('click', function () {
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        });
+    });
+
+    bodies.forEach(function (body1) {
+        var body = body1.querySelector('.task-name');
+        var container = body1.querySelector('.body-container');
+        body.addEventListener('click', function () {
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        });
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var searchDateInput = document.getElementById("searchDate");
+        var searchButton = document.getElementById("searchButton");
+        function checkDateInput() {
+            if (searchDateInput.value) {
+                searchButton.disabled = false;
+            } else {
+                searchButton.disabled = true;
+            }
+        }
+        checkDateInput();
+        searchDateInput.addEventListener("input", checkDateInput);
+        searchButton.addEventListener("click", function () {
+            var searchDate = searchDateInput.value;
+            var jobId = @Model.BigJob.BigJobId;
+            var url = `/Home/FullLogs?jobId=${jobId}&searchDate=${searchDate}`;
+            window.location.href = url;
+        });
+        var today = new Date();
+        today.setDate(today.getDate());
+        var tomorrow = today.toISOString().split('T')[0];
+        searchDateInput.setAttribute('max', tomorrow);
+    });
+
+    document.getElementById("archiveButton").addEventListener("click", function () {
+        var jobId = @Model.BigJob.BigJobId;
+        var deleteLogs = document.getElementById("deleteLogsCheckbox").checked;
+        fetch(`/Home/DownloadLogArchive?jobId=${jobId}&deleteLogs=${deleteLogs}`, {
+            method: 'GET'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = `Job_${jobId}_Logs_${new Date().toISOString().replace(/[:\-]/g, "").replace(/\.\d+/, "")}.zip`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+            });
+        location.reload(true);
+    });
+</script>

@@ -1,0 +1,153 @@
+﻿@{
+    ViewData["Title"] = "Job Results";
+}
+@using Web.Controllers
+@model JobResultModel
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="~/css/JobResults.css" asp-append-version="true" />
+<div class="container">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <h1 class="mt-5">Job Results:</h1>
+    </div>
+    @if (Model.BigJobs.Count == 0)
+    {
+        <h3>No jobs data yet</h3>
+    }
+    else
+    {
+        @if (Model.Responses.Count == 0)
+        {
+            <h3>No logs yet</h3>
+        }
+        else
+        {
+            @foreach (var bigJob in Model.BigJobs)
+            {
+                <div class="container">
+                    <div class="col-md-13">
+                        <div class="task-panel" data-toggle="collapse" data-target="#task-details-@bigJob.BigJobId">
+                            <span class="task-name">
+                                <div class="mainSpaces">
+                                    <div class="statusLabel task-name">Job name:</div>
+                                    <div class="statusValue">@bigJob.JobName</div>
+                                </div>
+                            </span>
+                            <span>
+                                <div class="mainSpaces">
+                                    <div class="statusLabel task-name">Status:</div>
+                                    @try {
+                                        @if (Model.Responses.FirstOrDefault(r => r.BigJobID == bigJob.BigJobId).Status != "Everything OK")
+                                        {
+                                            <div class="statusValue WrongStatus">@Model.Responses.FirstOrDefault(r => r.BigJobID == bigJob.BigJobId).Status</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="statusValue OkStatus">@Model.Responses.FirstOrDefault(r => r.BigJobID == bigJob.BigJobId).Status</div>
+                                        }
+                                    }
+                                    catch {
+                                        <div class="statusValue WrongStatus">Not Stated</div>
+                                    }
+                                    
+                                </div>
+                            </span>
+                            <span class="decoration">&gt;</span>
+                        </div>
+
+                        @{var response = Model.Responses.FirstOrDefault(r => r.BigJobID == bigJob.BigJobId);
+                            var listCounter = 0;
+                        }
+                        @if (response != null && response.Status != null)
+                        {
+                            <div id="task-details-@bigJob.BigJobId" class="collapse task-details">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="task-name">Last exec result:</span>
+                                    <a class="btn btn-primary" asp-area="" asp-controller="Home" asp-action="FullLogs" asp-route-jobId="@bigJob.BigJobId">Open all logs for task</a>
+                                </div>
+                                @foreach (var resp in Model.Responses.Where(r => r.BigJobID == bigJob.BigJobId))
+                                {
+                                    <div class="JobHead">
+                                        <div class="mainSpaces" id="headDuration">
+                                            <div class="statusLabel task-name">Duration:</div>
+                                            <div class="statusValue">@resp.ExecutionDuration ms</div>
+                                        </div>
+                                        <div class="mainSpaces" id="headDuration">
+                                            <div class="statusLabel task-name">StartTime:</div>
+                                            <div class="statusValue">@resp.StartTime</div>
+                                        </div>
+                                    </div>
+                                    @foreach (var miniJob in resp.ResponsesList.OrderByDescending(id => id.JobID))
+                                    {
+                                        <div class="dataSpaces">
+                                            <div class="statusLabel task-name">For</div>
+                                            <a class="statusValue">@miniJob.JobID</a>
+                                        </div>
+                                        <div class="mainSpaces">
+                                            <div class="statusLabel task-name">Status:</div>
+                                            @if (@miniJob.Status == "OK")
+                                            {
+                                                <div class="statusValue OkStatus"> @miniJob.Status</div>
+                                            }
+                                            else
+                                            {
+                                                <div class="statusValue WrongStatus">@miniJob.Status</div>
+                                            }
+                                        </div>
+                                        <div class="mainSpaces">
+                                            <div class="statusLabel task-name">Duration:</div>
+                                            <div class="statusValue">@miniJob.ExecutionDuration ms</div>
+                                        </div>
+                                        <div class="headers">
+                                            <div class="task-name but">Header:</div>
+                                            <div class="header-container" style="display: none;">@miniJob.Header</div>
+                                        </div>
+                                        <div class="bodies">
+                                            <div class="task-name but">Body:</div>
+                                            <div class="body-container" style="display: none;">@miniJob.Body</div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div id="task-details-@bigJob.BigJobId" class="collapse task-details">
+                                <h4>No logs for this job</h4>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    }
+</div>
+<script>
+    var tasks = document.querySelectorAll('.headers');
+    var bodies = document.querySelectorAll('.bodies');
+    tasks.forEach(function (task1) {
+        var header = task1.querySelector('.task-name');
+        var container = task1.querySelector('.header-container');
+
+        header.addEventListener('click', function () {
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        });
+    });
+
+    bodies.forEach(function (body1) {
+        var body = body1.querySelector('.task-name');
+        var container = body1.querySelector('.body-container');
+        body.addEventListener('click', function () {
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        });
+    });
+</script>

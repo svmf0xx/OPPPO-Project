@@ -1,0 +1,160 @@
+﻿/* JobResults.css */
+
+.body-container {
+    background-color: #e6e6fa;
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    color: #333;
+    word-wrap: break-word;
+}
+.header-container {
+    background-color: #e6e6fa;
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 5px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    color: #333;
+    word-wrap: break-word;
+}
+.but {
+    display: inline-block;
+    background-color: #28a745;
+    color: #fff;
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    position: relative;
+    width: 100px;
+    margin-bottom: 5px;
+}
+
+
+/* Уменьшение отступов между элементами */
+.header-container div {
+    margin: 0;
+    padding: 0;
+}
+
+/* Существующие стили */
+.task-panel {
+    background-color: #b0c4de;
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    position: relative;
+    transition-duration: 0.5s;
+    transition-timing-function: ease;
+}
+
+    .task-panel:hover {
+        background-color: #add8e6; /* Изменение цвета при наведении */
+    }
+
+.task-name {
+    font-weight: bold;
+}
+
+.decoration {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    font-size: 20px;
+}
+
+.task-details {
+    background-color: #f0f8ff;
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    transition-duration: 0.3s;
+    transition-timing-function: ease;
+}
+
+.align-right {
+    text-align: right;
+}
+.statusLabel,
+.statusValue {
+    margin: 0;
+    padding: 0;
+}
+.statusValue {
+    margin: 0 0 0 8px;
+    padding: 0;
+}
+.mainSpaces {
+    display: flex;
+    align-items: center;
+}
+.dataSpaces {
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.OkStatus {
+    color: green;
+    font-weight: bold;
+}
+
+.WrongStatus {
+    color: red;
+    font-weight: bold;
+}
+.JobHead {
+    border-bottom: 1px solid #000;
+    margin-bottom: 15px;
+}
+#headDuration {
+    margin-bottom: 8px;
+}
+
+body[data-bs-theme="dark"] .WrongStatus {
+    color: red;
+}
+
+body[data-bs-theme="dark"] .OkStatus {
+    color: green;
+}
+body[data-bs-theme="dark"] .task-details *{
+    background-color: #302e2e;
+}
+body[data-bs-theme="dark"] .body-container {
+    background-color: rgb(118, 118, 118);
+}
+body[data-bs-theme="dark"] .header-container {
+    background-color: rgb(118, 118, 118);
+}
+body[data-bs-theme="dark"] .but {
+    background-color: #28a745;
+}
+
+body[data-bs-theme="dark"] .task-panel * {
+    background-color: #373737;
+}
+
+body[data-bs-theme="dark"] .task-panel {
+    background-color: #373737;
+}
+
+body[data-bs-theme="dark"] .task-details {
+    background-color: #302e2e;
+    border: 1px solid #302e2e;
+    border-radius: 5px;
+}
+body[data-bs-theme="dark"] .btn-primary {
+    background-color: #0d6efd;
+}

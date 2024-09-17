@@ -1,0 +1,81 @@
+﻿@{
+    ViewData["Title"] = "About Us";
+}
+@using Web.Controllers;
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="~/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header class="container py-4">
+        <div class="text-center">
+            <h1 class="display-4">Welcome to Scheduler</h1>
+            <p class="lead">Explore the features and benefits of our scheduling platform.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="text-center my-4">
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg">Go to Home</a>
+        </div>
+
+        <section>
+            <h2 class="mb-4 text-center">Why Choose Us</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-4 mb-4 text-center">
+                    <i class="fas fa-clock fa-3x mb-3"></i>
+                    <h4>Standard Cron Expressions</h4>
+                    <p>We support standard cron expressions, allowing you to flexibly schedule task execution.</p>
+                </div>
+                <div class="col-md-4 mb-4 text-center">
+                    <i class="fas fa-play fa-3x mb-3"></i>
+                    <h4>Manual Execution</h4>
+                    <p>Ability to manually trigger task execution, providing flexibility and control over when tasks are performed.</p>
+                </div>
+                <div class="col-md-4 mb-4 text-center text-secondary">
+                    <i class="fab fa-telegram-plane fa-3x mb-3"></i>
+                    <h4>Telegram Notifications</h4>
+                    <p>Receive notifications about completed tasks and system status through Telegram, ensuring quick information and process control.</p>
+                </div>
+                <div class="col-md-4 mb-4 text-center">
+                    <i class="fas fa-file-alt fa-3x mb-3"></i>
+                    <h4>Logging</h4>
+                    <p>Track the history of task executions and system events through comprehensive logging, ensuring transparency and troubleshooting capabilities.</p>
+                </div>
+                <div class="col-md-4 mb-4 text-center">
+                    <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+                    <h4>Prediction of Next Execution</h4>
+                    <p>Receive predictions for the next scheduled task executions, enabling proactive planning and optimization of your workflow.</p>
+                </div>
+                <div class="col-md-4 mb-4 text-center">
+                    <i class="fas fa-cogs fa-3x mb-3"></i>
+                    <h4>API</h4>
+                    <p>Access our powerful API to integrate our scheduler into your existing systems and streamline your workflow.</p>
+                </div>
+                <div class="col-md-4 mb-4 text-center">
+                    <i class="fas fa-check-circle fa-3x mb-3"></i>
+                    <h4>Regexp</h4>
+                    <p>Utilize regular expressions to parse and match HTTP responses, allowing you to determine success or failure based on predefined patterns.</p>
+                </div>
+                <div class="col-md-4 mb-4 text-center">
+                    <i class="fas fa-broadcast-tower fa-3x mb-3"></i>
+                    <h4>Real-time Updates with SignalR</h4>
+                    <p>Enhance user experience by providing real-time updates and notifications using SignalR, allowing seamless communication between server and client applications.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    
+</body>
+</html>
+
+
+

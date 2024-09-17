@@ -1,0 +1,190 @@
+﻿/* JobResults.css */
+
+.body-container {
+    background-color: #e6e6fa;
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    color: #333;
+    word-wrap: break-word;
+}
+.header-container {
+    background-color: #e6e6fa;
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 5px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    color: #333;
+    word-wrap: break-word;
+}
+.but {
+    display: inline-block;
+    background-color: #28a745;
+    color: #fff;
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+    position: relative;
+    width: 100px;
+    margin-bottom: 5px;
+}
+
+
+/* Уменьшение отступов между элементами */
+.header-container div {
+    margin: 0;
+    padding: 0;
+}
+
+/* Существующие стили */
+.task-panel {
+    background-color: #b0c4de;
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    position: relative;
+    transition-duration: 0.5s;
+    transition-timing-function: ease;
+}
+
+    .task-panel:hover {
+        background-color: #add8e6; /* Изменение цвета при наведении */
+    }
+
+.task-name {
+    font-weight: bold;
+}
+
+.decoration {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    font-size: 20px;
+}
+
+.task-details {
+    background-color: #f0f8ff; /* Цвет дополнительных полей */
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+    transition-duration: 0.5s; /* Длительность анимации */
+    transition-timing-function: ease; /* Функция сглаживания */
+}
+
+.align-right {
+    text-align: right;
+}
+.statusLabel,
+.statusValue {
+    margin: 0;
+    padding: 0;
+}
+.statusValue {
+    margin: 0 0 0 8px;
+    padding: 0;
+}
+.mainSpaces {
+    display: flex;
+    align-items: center;
+}
+.dataSpaces {
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+}
+
+.OkStatus {
+    color: green;
+    font-weight: bold;
+}
+
+.WrongStatus {
+    color: red;
+    font-weight: bold;
+}
+.JobHead {
+    border-bottom: 1px solid #000;
+    margin-bottom: 15px;
+}
+#headDuration {
+    margin-bottom: 8px;
+}
+.contentsButton {
+    height: 52px;
+    width: 160px;
+}
+#searchDate {
+    height: calc(1.5em + 0.75rem + 2px);
+    margin-right: 20px;
+}
+.pagination-container {
+    flex: 1; 
+    text-align: left; 
+}
+
+.datepicker-container {
+    flex: 1;
+    text-align: right;
+    max-width: 50%;
+}
+body[data-bs-theme="dark"] .page-item, body[data-bs-theme="dark"] .page-link {
+    background-color: #1e1e1e !important;
+    color: white !important;
+}
+
+.logsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+#archiveButton {
+    margin-bottom: 10px;
+    align-self: flex-end;
+}
+
+@media (max-width: 768px) {
+    .d-flex {
+        display: block !important;
+    }
+
+    .d-flex.justify-content-between {
+        justify-content: flex-start;
+    }
+
+    .checkboxLogs {
+        margin-top: 40px;
+        margin-left: 40px;
+    }
+    #archiveButton {
+        align-self: flex-start;
+    }
+    .logsContainer {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+    }
+    .pagination-container {
+        margin-top: -25px;
+    }
+    .datepicker-container {
+        margin-top: -5px;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        flex: 1;
+        text-align: left;
+        max-width: 100%;
+    }
+}

@@ -1,0 +1,903 @@
+﻿﻿﻿@using Shcheduler.Core.Dto
+@using System.Text.Json;
+@using Shcheduler.Core.SignalR
+@{
+    ViewData["Title"] = "Home Page";
+}
+@using Web.Controllers;
+@model IndexModel
+@{
+    var bigJobsJson = JsonSerializer.Serialize(Model.BigJobs);
+    var idd = 1;
+    var iddd = 1;
+}
+<link rel="stylesheet" href="~/css/JobResults.css" asp-append-version="true" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cronstrue"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("https://webscheduler.ru/SignalRHub")
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+    var timetableId = 0;
+</script>
+<link rel="stylesheet" href="~/css/index.css" asp-append-version="true" />
+<div class="container">
+    <div class="d-flex justify-content-between align-items-end  mb-4">
+        <h1 class="mt-5">Recurring Jobs:</h1>
+        <button class="btn btn-primary contentsButton" onclick="openNewJobModal()">New Job</button>
+    </div>
+    @if (Model.BigJobs.Count == 0)
+    {
+        <h3>No jobs yet</h3>
+    }
+    else
+    {
+        <table class="table" id="pcContent">
+            <thead>
+                <tr>
+                    <th id="idInTable"></th>
+                    <th id="nameHeader">Name</th>
+                    <th id="cronHeader">Cron</th>
+                    <th id="counterHeader">Jobs</th>
+                    <th id="timezoneHeader">Timezone</th>
+                    <th id="statusHeader">Status</th>
+                    <th class="execHeader">Last exec</th>
+                    <th class="execHeader">Next exec</th>
+                    <th id="buttonHeader"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var bigJob in Model.BigJobs)
+                {
+                    <tr>
+                        <td class="idInTable"> @idd </td>
+                        <td>@bigJob.JobName</td>
+                        <td>@bigJob.Cron</td>
+                        <td class="jobsCount">
+                            Count: @bigJob.Jobs.Count
+                            <div class="jobDetails job-details">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Id</th>
+                                            <th>Url</th>
+                                            <th class="regexTop">success RegEx</th>
+                                            <th class="regexTop">error RegEx</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="jobDetailsBody">
+                                        @foreach (var Job in Model.BigJobs[idd - 1].Jobs)
+                                        {
+                                            <tr>
+                                                <td>@(Job.IdJob + 1)</td>
+                                                <td>@Job.Url</td>
+                                                <td class="regexTop">@(!string.IsNullOrEmpty(Job.successRegex) ? Job.successRegex : "not stated")</td>
+                                                <td class="regexTop">@(!string.IsNullOrEmpty(Job.errorRegex) ? Job.errorRegex : "not stated")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                        @{
+                            idd++;
+                        }
+                        <td>@bigJob.Timezone</td>
+                        <td id="status+@bigJob.BigJobId" class="statuses"></td>
+                        <td id="lastExec+@bigJob.BigJobId"></td>
+                        <td id="nextExec+@bigJob.BigJobId"></td>
+
+                        <td class="buttontd">
+                            <button class="btn btn-success tableBtn" onclick="openEditJobModal(@bigJob.BigJobId)">Edit</button>
+                            <button class="btn btn-info" onclick="timetable(@bigJob.BigJobId)">Timetable</button>
+                            <button class="btn btn-danger" onclick="triggerJob(event, @bigJob.BigJobId)">Trigger Now</button>
+                        </td>
+                    </tr>
+
+                }
+            </tbody>
+        </table>
+        @foreach (var bigJob in Model.BigJobs)
+        {
+            <div class="col-md-13" id="mobileContent">
+                <div class="task-panel" data-toggle="collapse" data-target="#task-details-@bigJob.BigJobId">
+                    <div class="mainSpaces">
+                        <div style="margin-right:4px;">№@iddd: </div>
+                        <div>@bigJob.JobName</div>
+                    </div>
+                    <span class="decoration">&gt;</span>
+                </div>
+
+                <div id="task-details-@bigJob.BigJobId" class="collapse task-details mobjobs">
+                    <div class="mainSpaces">
+                        <div class="statusLabel task-name">Cron expression:</div>
+                        <div class="statusValue">@bigJob.Cron</div>
+                    </div>
+                    @{
+                        iddd++;
+                    }
+                    <div class="mainSpaces">
+                        <div class="statusLabel task-name">Timezone:</div>
+                        <div class="statusValue">@bigJob.Timezone</div>
+                    </div>
+                    <div class="mainSpaces">
+                        <div class="statusLabel task-name">Status:</div>
+                        <div class="statusValue" id="mobileStatus+@bigJob.BigJobId"></div>
+                    </div>
+                    <div class="mainSpaces">
+                        <div class="statusLabel task-name">Last execution:</div>
+                        <div class="statusValue" id="mobilelastExec+@bigJob.BigJobId"></div>
+                    </div>
+                    <div class="mainSpaces">
+                        <div class="statusLabel task-name">Next execution:</div>
+                        <div class="statusValue" id="mobilenextExec+@bigJob.BigJobId"></div>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <button class="btn btn-success tableBtn" onclick="openEditJobModal(@bigJob.BigJobId)">Edit</button>
+                        <button class="btn btn-info tableBtn" onclick="timetable(@bigJob.BigJobId)">Timetable</button>
+                        <button class="btn btn-danger tableBtn" onclick="triggerJob(event, @bigJob.BigJobId)">Trigger Now</button>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+<!-- New Job Modal -->
+<div class="modal" id="newJobModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Job</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeNewJobModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" asp-controller="Home" asp-action="AddJob" id="NewJobForm">
+                <input asp-for="@Model.NewBigJob.Timezone" type="hidden" id="Timezone" style="display : none;">
+                <div class="modal-body">
+                    <div class="text-center">
+                        <div class="input-group mb-3">
+                            <input asp-for="@Model.NewBigJob.JobName" type="text" id="jobName" class="form-control" placeholder="Enter job name" required>
+                        </div>
+                        <div class="input-group mb-3">
+                            <input asp-for="@Model.NewBigJob.Cron" type="text" id="cronExpressionInModal" class="form-control" placeholder="Enter cron expression" required>
+                            <button type="button" class="btn btn-outline-secondary" title="Edit cron parametrs with editor" onclick="editCronModal('#newJobModal')">Edit cron</button>
+                        </div>
+                        <label for="form-check" style="text-align: left; display: block;">Select one handler agent:</label>
+                        @foreach (var agent in Model.agents)
+                        {
+                            <div class="form-check">
+                                <input asp-for="@Model.NewBigJob.apiKey" class="form-check-input agent-radio-new" type="radio" id="agent1_@agent.ApiKey" value="@agent.ApiKey" required>
+                                <label class="form-check-label ml-0" for="agent1_@agent.ApiKey">Agent: @agent.AgentName</label>
+                            </div>
+                        }
+                        <div class="mt-4">
+                            <label for="url" style="text-align: left; display: block;">Chain of requests:</label>
+                            <div id="urlFields">
+                                <div class="input-group mb-3">
+                                    <input asp-for="@Model.NewBigJob.Jobs[0].IdJob" type="hidden" />
+                                    <span class="input-group-prepend btn btn-outline-secondary idbtn" disable>1</span>
+                                    <input asp-for="@Model.NewBigJob.Jobs[0].Url" type="url" class="form-control" id="NewJobModalFirstUrl" placeholder="Enter Uri" required>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="showAdditionalDiv('regex0')"> &#9660; </button>
+                                    </div>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="addField()">+</button>
+                                </div>
+                                <div id="regex0" class="regex-container" style="display: none;">
+                                    <input asp-for="@Model.NewBigJob.Jobs[0].successRegex" id="NewJobModalFirstSuccessRegex" type="text" class="form-control successRegex" placeholder="Enter RegEx success expression (optional)">
+                                    <input asp-for="@Model.NewBigJob.Jobs[0].errorRegex" id="NewJobModalFirstErrorRegex" type="text" class="form-control errorRegex" placeholder="Enter RegEx error expression (optional)">
+                                </div>
+                            </div>
+                        </div>
+                        <input id="errorbox" asp-for="@Model.NewBigJob.StoppingByError" type="checkbox" />
+                        <label for="errorbox">Stop work if there is an error in a request from the chain</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="submit" class="add-btn btn btn-secondary" value="Save" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Edit Job Modal -->
+<div class="modal" id="editJobModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit big job</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeEditJobModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editJobForm" method="post" asp-controller="Home" asp-action="EditJob">
+                <input asp-for="@Model.NewBigJob.BigJobId" type="hidden" id="BigJobIdInEditModal" style="display : none;">
+                <input asp-for="@Model.NewBigJob.Timezone" type="hidden" id="TimezoneInEditModal" style="display : none;">
+                <div id="editJobModalBody" class="modal-body">
+                    <input asp-for="@Model.NewBigJob.BigJobId" type="hidden" />
+                    <div class="input-group mb-3">
+                        <input asp-for="@Model.NewBigJob.JobName" type="text" id="jobNameInEditModal" class="form-control" placeholder="Enter job name" required>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input asp-for="@Model.NewBigJob.Cron" type="text" id="cronExpressionInEditJobModal" class="form-control" placeholder="Enter cron expression" required>
+                        <button type="button" class="btn btn-outline-secondary" title="Edit cron parametrs with editor" onclick="editCronModal('#editJobModal')">Edit cron</button>
+                    </div>
+                    <label for="agentsinEditModal" style="text-align: left; display: block;">Select one handler agent:</label>
+                    <div id="agentsinEditModal">
+                    </div>
+                    <div class="mt-4">
+                        <label for="url" style="text-align: left; display: block;">Chain of requests:</label>
+                        <div id="urlFieldsInEditModal">
+                            <div class="input-group mb-3">
+                                <input asp-for="@Model.NewBigJob.Jobs[0].IdJob" type="hidden" id="smallJobId0InEditModal" />
+                                <span class="input-group-prepend btn btn-outline-secondary idbtn" disable>1</span>
+                                <input asp-for="@Model.NewBigJob.Jobs[0].Url" type="url" class="form-control" placeholder="Enter Uri" id="smallJobUri0InEditModal" required>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="showAdditionalDiv('regexEdit0')"> &#9660; </button>
+                                </div>
+                                <button class="btn btn-outline-secondary" type="button" onclick="addFieldToEditModal()">+</button>
+                            </div>
+                            <div id="regexEdit0" class="regex-container" style="display: none;">
+                                <input asp-for="@Model.NewBigJob.Jobs[0].successRegex" id="successRegex0" type="text" class="form-control successRegexEdit" placeholder="Enter RegEx success expression (optional)">
+                                <input asp-for="@Model.NewBigJob.Jobs[0].errorRegex" id="errorRegex0" type="text" class="form-control successRegexEdit" placeholder="Enter RegEx error expression (optional)">
+                            </div>
+                        </div>
+                    </div>
+                    <input id="errorbox1" asp-for="@Model.NewBigJob.StoppingByError" type="checkbox" />
+                    <label for="errorbox1">Stop work if there is an error in a request from the chain</label>
+                    <div>
+                        *when deleting a job, all logs will also be deleted
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" id="deleteButtonInEditModal" class="btn btn-danger" value="Delete">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Cron Modal -->
+<div class="modal" id="editCronModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit cron expression</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeEditCronModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <span id="cronDesh">
+                </span>
+                <div class="mt-4">
+                    <input type="text" id="cronExpressionInEditModal" class="form-control" placeholder="Enter cron expression">
+                </div>
+                <div id="tipsPicker" class="d-flex">
+                    <p class="mr-2 mb-0">Tips:&nbsp&nbsp&nbsp</p>
+                    <a href="#" class="tips" onclick="updateTable('minute')">minute</a>
+                    <a href="#" class="tips" onclick="updateTable('hour')">hour</a>
+                    <a href="#" class="tips" onclick="updateTable('day')">day</a>
+                    <a href="#" class="tips" onclick="updateTable('month')">month</a>
+                    <a href="#" class="tips" onclick="updateTable('weekday')">weekday</a>
+                </div>
+                <table id="cronTable" border="0">
+                    <tr>
+                        <th>*</th>
+                        <th class="symbols">any value</th>
+                    </tr>
+                    <tr>
+                        <th>,</th>
+                        <th class="symbols">value list separator</th>
+                    </tr>
+                    <tr>
+                        <th>-</th>
+                        <th class="symbols">range of values</th>
+                    </tr>
+                    <tr>
+                        <th>/</th>
+                        <th class="symbols">step values</th>
+                    </tr>
+                </table>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="saveCron()">Save</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- timetable Modal -->
+<div class="modal" id="timetableModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="ModalTitleForTimetable" class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeTimetableModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div id="ModalContentForTimetable" class="modal-body">
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts {
+    <script>
+        const connectionEstablishedEvent = new Event("connectionEstablished");
+        async function start() {
+            try {
+                await connection.start();
+                await connection.invoke("@nameof(ISubscribe.ClientStartConnectionAsync)");
+                document.dispatchEvent(connectionEstablishedEvent);
+            }
+            catch (err) {
+                console.log(err);
+            }
+        };
+        connection.onclose(async () => {
+            await start();
+        });
+        start();
+
+        connection.on("@nameof(ISend.UpdateAgentsForClient)", (result) => {
+            var agent = document.getElementById("agent_" + result);
+            agent.parentElement.remove();
+        });
+
+        connection.on("@nameof(ISend.SendExecutionTime)", (result) => {
+            var schId = result.schId;
+            var statusElement = document.getElementById("status+" + schId);
+            var statusElementMobile = document.getElementById("mobileStatus+" + schId);
+            if (statusElement) {
+                var lastExecElement = document.getElementById("lastExec+" + schId);
+                var nextExecElement = document.getElementById("nextExec+" + schId);
+                statusElement.innerText = !result.status ? "no data" : result.status;
+                if (result.lastEx === "0001-01-01T00:00:00") {
+                    lastExecElement.innerText = "no data";
+                }
+                else {
+                    lastExecElement.innerText = result.lastEx.replace('T', ' ').split('.')[0];
+                }
+                nextExecElement.innerText = result.nextEx.replace('T', ' ');
+            }
+            if (statusElementMobile) {
+                var lastExecElement = document.getElementById("mobilelastExec+" + schId);
+                var nextExecElement = document.getElementById("mobilenextExec+" + schId);
+                statusElementMobile.innerText = !result.status ? "no data" : result.status;
+                if (result.lastEx === "0001-01-01T00:00:00") {
+                    lastExecElement.innerText = "no data";
+                }
+                else {
+                    lastExecElement.innerText = result.lastEx.replace('T', ' ').split('.')[0];
+                }
+                nextExecElement.innerText = result.nextEx.replace('T', ' ');
+            }
+        });
+        function closeTimetableModal() {
+            $('#timetableModal').modal('hide');
+        }
+        function timetable(bigJobId) {
+            timetableId = bigJobId;
+            connection.invoke("@nameof(ISend.ExecTimeTable)", bigJobId);
+        }
+        connection.on("@nameof(ISend.SendTimeTableToClient)", (dto) => {
+            if (dto.bigJobId == timetableId) {
+                var JobName = "";
+                var AgentName = "";
+        @foreach (var job in Model.BigJobs)
+        {
+            <text>
+                                if (@job.BigJobId == dto.bigJobId) {
+                        JobName = "@job.JobName";
+                @foreach (var agent in Model.agents)
+                {
+                    <text>
+                                            if ("@agent.ApiKey" == "@job.apiKey") {
+                                AgentName = "@agent.AgentName";
+                            }
+                    </text>
+                }
+                                }
+            </text>
+        }
+                    document.getElementById('ModalTitleForTimetable').textContent = "Timetable for job: " + JobName + " from agent: " + AgentName;
+                dto.dateList.forEach(function (date) {
+                    var newDiv = document.createElement("div");
+                    newDiv.textContent = date.replace('T', ' ');
+                    document.getElementById('ModalContentForTimetable').appendChild(newDiv);
+                });
+                $('#timetableModal').modal('show');
+            }
+        });
+        $('#timetableModal').on('hidden.bs.modal', function (e) {
+            document.getElementById('ModalContentForTimetable').innerHTML = "";
+            document.getElementById('ModalTitleForTimetable').innerHTML = "";
+        });
+
+        function invokeStatus(bigJobId) {
+            if (connection.state === signalR.HubConnectionState.Connected) {
+                connection.invoke("@nameof(ISend.CheckStatus)", bigJobId)
+                    .catch(err => console.error("Error invoking @nameof(ISend.CheckStatus):", err));
+            } else {
+                console.warn("Connection is not ready. Cannot invoke @nameof(ISend.CheckStatus) for BigJobId:", bigJobId);
+            }
+        }
+        window.addEventListener('load', function () {
+        @foreach (var bigjob in Model.BigJobs)
+        {
+            <text>invokeStatus(@bigjob.BigJobId); </text>
+        }
+                });
+        function showAdditionalDiv(id) {
+            cont = document.getElementById(id);
+            if (cont.style.display === 'none') {
+                cont.style.display = 'block';
+            } else {
+                cont.style.display = 'none';
+            }
+        }
+        function triggerJob(event, bigJobId) {
+            var button = event.target;
+            console.log(button);
+            button.disabled = true;
+            if (connection.state === signalR.HubConnectionState.Connected) {
+                connection.invoke("@nameof(ISend.ExecuteNow)", bigJobId)
+                    .catch(err => console.error("Error invoking @nameof(ISend.ExecuteNow):", err));
+            } else {
+                console.warn("Connection is not ready. Cannot invoke @nameof(ISend.ExecuteNow) for BigJobId:", bigJobId);
+            }
+            setTimeout(function () {
+                button.disabled = false;
+            }, 4000);
+        }
+        var flagForEdit = true;
+        var timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.getElementById("Timezone").value = timezone;
+        var idForFields = 0
+        var indexer = 0;
+        var modalNameForCron;
+        document.getElementById('NewJobForm').addEventListener('submit', function (event) {
+            var cronExpression = document.getElementById('cronExpressionInModal').value.trim();
+            var validCronRegex = /^[0-9,*\/\- ]*(sun|mon|tue|wed|thu|fri|sat)?[0-9,*\/\- ]*$/i;
+
+            if (!validCronRegex.test(cronExpression)) {
+                alert('Invalid cron expression: contains invalid characters.');
+                event.preventDefault();
+                return;
+            }
+
+            try {
+                var translatedText = cronstrue.toString(cronExpression);
+            } catch (error) {
+                alert('Invalid cron expression');
+                event.preventDefault();
+                return;
+            }
+        });
+
+        document.getElementById('editJobForm').addEventListener('submit', function (event) {
+            var cronExpression = document.getElementById('cronExpressionInEditJobModal').value.trim();
+            var validCronRegex = /^[0-9,*\/\- ]*(sun|mon|tue|wed|thu|fri|sat)?[0-9,*\/\- ]*$/i;
+
+            if (!validCronRegex.test(cronExpression)) {
+                alert('Invalid cron expression: contains invalid characters.');
+                event.preventDefault();
+                return;
+            }
+
+            try {
+                var translatedText = cronstrue.toString(cronExpression);
+            } catch (error) {
+                alert('Invalid cron expression');
+                event.preventDefault();
+                return;
+            }
+        });
+        $('#newJobModal').on('hidden.bs.modal', function (e) {
+            if (flagForEdit) {
+                var elements = document.getElementsByClassName('usrfieldsfordel');
+                var elementsArray = Array.from(elements);
+                elementsArray.forEach(function (element) {
+                    element.parentNode.removeChild(element);
+                });
+                idForFields = 0
+                document.getElementById('cronExpressionInModal').value = "";
+                document.getElementById('jobName').value = "";
+                document.getElementById('NewJobModalFirstUrl').value = "";
+                document.getElementById('NewJobModalFirstSuccessRegex').value = "";
+                document.getElementById('NewJobModalFirstErrorRegex').value = "";
+                document.getElementById('regex0').style.display = 'none';
+                document.getElementById('errorbox').checked = false;
+                var radios = document.querySelectorAll('.agent-radio-new');
+                radios.forEach(function (radio) {
+                    radio.checked = false;
+                });
+                var elements = document.querySelectorAll('.regexContainerForDelete');
+                elements.forEach(function (element) {
+                    let parentDiv = element.closest('div');
+                    if (parentDiv) {
+                        parentDiv.remove();
+                    }
+                });
+            }
+        });
+        $('#editJobModal').on('hidden.bs.modal', function (e) {
+            if (flagForEdit) {
+                var elements = document.getElementsByClassName('usrfieldsfordel');
+                document.getElementById('agentsinEditModal').innerHTML = '';
+                var elementsArray = Array.from(elements);
+                elementsArray.forEach(function (element) {
+                    element.parentNode.removeChild(element);
+                });
+                idForFields = 0
+                document.getElementById('cronExpressionInEditModal').value = "";
+                document.getElementById('jobNameInEditModal').value = "";
+            }
+            document.getElementById('regexEdit0').style.display = 'none';
+            var elements = document.querySelectorAll('.regexContainerForDelete');
+            elements.forEach(function (element) {
+                let parentDiv = element.closest('div');
+                if (parentDiv) {
+                    parentDiv.remove();
+                }
+            });
+            document.getElementById('errorbox1').checked = false;
+        });
+        function saveNewBigJob() {
+            var bigJobName = document.getElementsById('jobName');
+        }
+        function openNewJobModal() {
+            $('#newJobModal').modal('show');
+        }
+        function addField() {
+            idForFields++;
+            indexer = idForFields + 1;
+            var newField = `<div>
+                                        <div class="input-group mb-3 usrfieldsfordel">
+                                        <input name="NewBigJob.Jobs[${idForFields}].IdJob" type="hidden" value="${idForFields}"/>
+                                        <span class="input-group-prepend btn btn-outline-secondary idbtn" disable="">${indexer}</span>
+                                        <input type="url" class="form-control" placeholder="Enter Uri" required name="NewBigJob.Jobs[${idForFields}].Url" value="">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary showRegBtn" type="button" onclick="showAdditionalDiv('regex${idForFields}')"> &#9660; </button>
+                                        </div>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="removeField(this)">-</button>
+                                    </div>
+                                        <div id="regex${idForFields}" class="regex-container regexContainerForDelete" style="display: none;">
+                                        <input name="NewBigJob.Jobs[${idForFields}].successRegex" type="text" class="form-control successRegex" placeholder="Enter RegEx success expression (optional)">
+                                        <input name="NewBigJob.Jobs[${idForFields}].errorRegex" type="text" class="form-control errorRegex" placeholder="Enter RegEx error expression (optional)">
+                                    </div>
+                                    </div>`;
+            $('#urlFields').append(newField);
+        }
+        function addFieldToEditModal() {
+            idForFields++;
+            indexer = idForFields + 1;
+            var newField = `<div>
+                                        <div class="input-group mb-3 usrfieldsfordel">
+                                        <input name="NewBigJob.Jobs[${idForFields}].IdJob" type="hidden" id="smallJobId${idForFields}InEditModal" value="${idForFields}"/>
+                                        <span class="input-group-prepend btn btn-outline-secondary idbtn" id = "idbtn${idForFields}InEditModal" disable="">${indexer}</span>
+                                        <input type="url" class="form-control" placeholder="Enter Uri" id="smallJobUri${idForFields}InEditModal" required name="NewBigJob.Jobs[${idForFields}].Url" value="">
+                                        <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary showRegBtn" type="button" onclick="showAdditionalDiv('regexEdit${idForFields}')"> &#9660; </button>
+                                        </div>
+                                        <button class="btn btn-outline-secondary" type="button" onclick="removeFieldInEditModal(this)">-</button>
+                                    </div>
+                                        <div id="regexEdit${idForFields}" class="regex-container regexContainerForDelete" style="display: none;">
+                                        <input id="successRegex${idForFields}" name="NewBigJob.Jobs[${idForFields}].successRegex" type="text" class="form-control successRegexEdit" placeholder="Enter RegEx success expression (optional)">
+                                        <input id="errorRegex${idForFields}" name="NewBigJob.Jobs[${idForFields}].errorRegex" type="text" class="form-control errorRegexEdit" placeholder="Enter RegEx error expression (optional)">
+                                    </div>
+                                    </div>`;
+            $('#urlFieldsInEditModal').append(newField);
+        }
+        function openEditJobModal(bigJob) {
+        @{
+            BigJobDto selectedJob = new BigJobDto();
+        }
+        @foreach (var job in Model.BigJobs)
+        {
+            <text>
+                        if (@job.BigJobId == bigJob) {
+                @{
+                    selectedJob = job;
+                    <text>
+                                        const deleteButton = document.getElementById('deleteButtonInEditModal');
+                        deleteButton.onclick = function () {
+                            deleteJob(bigJob);
+                        };
+                        document.getElementById('jobNameInEditModal').value = '@selectedJob.JobName';
+                        document.getElementById('cronExpressionInEditJobModal').value = '@selectedJob.Cron';
+                        document.getElementById('BigJobIdInEditModal').value = '@selectedJob.BigJobId';
+                        document.getElementById('TimezoneInEditModal').value = '@selectedJob.Timezone';
+                        if ('@selectedJob.StoppingByError' == 'False') {
+                            document.getElementById('errorbox1').checked = false;
+                        }
+                        else {
+                            document.getElementById('errorbox1').checked = true;
+                        }
+                    </text>
+                    foreach (var jobb in selectedJob.Jobs)
+                    {
+                        <text>
+                                document.getElementById('smallJobUri0InEditModal').value = '@selectedJob.Jobs[0].Url';
+                            document.getElementById('successRegex0').value = '@selectedJob.Jobs[0].successRegex';
+                            document.getElementById('errorRegex0').value = '@selectedJob.Jobs[0].errorRegex';
+                        </text>
+                        if (jobb.IdJob != 0)
+                        {
+                            <text>
+                                    addFieldToEditModal();
+                                document.getElementById('smallJobUri' + '@jobb.IdJob' + 'InEditModal').value = '@selectedJob.Jobs[@jobb.IdJob].Url';
+                                document.getElementById('successRegex' + '@jobb.IdJob').value = '@selectedJob.Jobs[@jobb.IdJob].successRegex';
+                                document.getElementById('errorRegex' + '@jobb.IdJob').value = '@selectedJob.Jobs[@jobb.IdJob].errorRegex';
+                            </text>
+                        }
+                    }
+                    var newAgents = "";
+                    @foreach (var agent in Model.agents)
+                    {
+
+                        <text>
+                                newAgents = `<div class="form-check">
+                                                                <input name="NewBigJob.apiKey" class="form-check-input agent-radio-new" type="radio" id="agent_@agent.ApiKey" value="@agent.ApiKey" required/>
+                                                                <label class="form-check-label ml-0" for="agent_@agent.ApiKey">Agent: @agent.AgentName</label>
+                                                            </div>`;
+                            $('#agentsinEditModal').append(newAgents);
+                        </text>
+                    }
+                    <text>
+                            document.getElementById('agent_@job.apiKey').checked = true;
+                    </text>
+                }
+                        }
+            </text>
+        }
+                $('#editJobModal').modal('show');
+        }
+        function deleteJob(id) {
+            $.ajax({
+                type: "POST",
+                url: "/Home/DelJob",
+                data: { idForDel: id },
+                success: function (response) {
+                    $('#editJobModal').modal('hide');
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Ошибка при удалении работы:", error);
+                }
+            });
+        }
+        function removeFieldInEditModal(button) {
+            var fieldToRemove = $(button).parent().parent();
+            fieldToRemove.remove();
+            var fields = $('#urlFieldsInEditModal .usrfieldsfordel');
+
+            fields.each(function (i) {
+                var field = $(this);
+                var newId = i + 2;
+                var hiddenInput = field.find('input[type="hidden"]');
+                hiddenInput.attr('id', 'smallJobId' + (newId - 1) + 'InEditModal');
+                hiddenInput.attr('name', 'NewBigJob.Jobs[' + (newId - 1) + '].IdJob');
+                hiddenInput.val(newId - 1);
+                var indexSpan = field.find('.idbtn');
+                indexSpan.attr('id', 'idbtn' + (newId - 1) + 'InEditModal');
+                indexSpan.text(newId);
+                var urlInput = field.find('input[type="url"]');
+                urlInput.attr('id', 'smallJobUri' + (newId - 1) + 'InEditModal');
+                urlInput.attr('name', 'NewBigJob.Jobs[' + (newId - 1) + '].Url');
+                var successRegex = field.parent().find('.successRegexEdit');
+                successRegex.attr('id', 'successRegexEdit' + (newId - 1));
+                successRegex.attr('name', 'NewBigJob.Jobs[' + (newId - 1) + '].successRegex');
+                var errorRegex = field.parent().find('.errorRegexEdit');
+                errorRegex.attr('id', 'errorRegexEdit' + (newId - 1));
+                errorRegex.attr('name', 'NewBigJob.Jobs[' + (newId - 1) + '].errorRegex');
+                var shBtn = field.find('.showRegBtn');
+                shBtn.onclick = function () {
+                    showAdditionalDiv('regex' + (newId - 1));
+                };
+            });
+
+            idForFields = fields.length;
+        }
+
+        function removeField(button) {
+            var fieldToRemove = $(button).parent().parent();
+            fieldToRemove.remove();
+
+            var fields = $('#urlFields .usrfieldsfordel');
+
+            fields.each(function (i) {
+                var field = $(this);
+                var newId = i + 2;
+                var hiddenInput = field.find('input[type="hidden"]');
+                hiddenInput.attr('name', 'NewBigJob.Jobs[' + (newId - 1) + '].IdJob');
+                hiddenInput.val(newId - 1);
+                var indexSpan = field.find('.idbtn');
+                indexSpan.attr('id', 'idbtn' + (newId - 1) + 'InEditModal');
+                indexSpan.text(newId);
+                var urlInput = field.find('input[type="url"]');
+                urlInput.attr('name', 'NewBigJob.Jobs[' + (newId - 1) + '].Url');
+                var successRegex = field.parent().find('.successRegex');
+                successRegex.attr('id', 'successRegex' + (newId - 1));
+                successRegex.attr('name', 'NewBigJob.Jobs[' + (newId - 1) + '].successRegex');
+                var errorRegex = field.parent().find('.errorRegex');
+                errorRegex.attr('id', 'errorRegex' + (newId - 1));
+                errorRegex.attr('name', 'NewBigJob.Jobs[' + (newId - 1) + '].errorRegex');
+                var shBtn = field.find('.showRegBtn');
+                shBtn.onclick = function () {
+                    showAdditionalDiv('regex' + (newId - 1));
+                };
+            });
+
+            idForFields = fields.length;
+        }
+        function closeNewJobModal() {
+            $('#newJobModal').modal('hide');
+        }
+        function closeEditJobModal() {
+            $('#editJobModal').modal('hide');
+        }
+        function closeEditCronModal() {
+            $('#editCronModal').modal('hide');
+            flagForEdit = true;
+            console.log(`${modalNameForCron}`);
+            $(`${modalNameForCron}`).modal('show');
+        }
+        function editCronModal(modalName) {
+            modalNameForCron = modalName;
+            flagForEdit = false;
+            let cronValue = "";
+            if (modalName === '#editJobModal') {
+                cronValue = document.getElementById('cronExpressionInEditJobModal').value;
+            }
+            else {
+                cronValue = document.getElementById('cronExpressionInModal').value;
+            }
+            if (cronValue.trim() === "") {
+                document.getElementById('cronDesh').innerText = "Empty expression";
+            }
+            else {
+                document.getElementById('cronExpressionInEditModal').value = cronValue;
+                onCronExpressionChange();
+            }
+            $('#editCronModal').modal('show');
+            $(`${modalName}`).modal('hide');
+        }
+        function saveCron() {
+            if (modalNameForCron === '#editJobModal') {
+                document.getElementById('cronExpressionInEditJobModal').value = document.getElementById('cronExpressionInEditModal').value;
+            }
+            else {
+                document.getElementById('cronExpressionInModal').value = document.getElementById('cronExpressionInEditModal').value;
+            }
+            closeEditCronModal();
+        }
+        function onCronExpressionChange() {
+            var cronValue = document.getElementById('cronExpressionInEditModal').value;
+            var cronDesh = document.getElementById('cronDesh');
+            try {
+                var translatedText = cronstrue.toString(cronValue);
+                cronDesh.innerText = translatedText;
+                //document.getElementById('cronExpressionInEditModal').style.color = 'lightgreen'
+            } catch (error) {
+                cronDesh.innerText = "Invalid expression";
+                //document.getElementById('cronExpressionInEditModal').style.color = 'lightred';
+            }
+        }
+        function findButtonByTextContent(text) {
+            var buttons = document.querySelectorAll('a');
+            for (var i = 0; i < buttons.length; i++) {
+                if (buttons[i].textContent === text) {
+                    return buttons[i];
+                }
+            }
+            return null;
+        }
+        document.getElementById('cronExpressionInEditModal').addEventListener('input', onCronExpressionChange);
+        var newField;
+        function updateTable(selectedButton) {
+            clearSelection();
+            removeTableField();
+            var button = findButtonByTextContent(selectedButton);
+            button.classList.add('selected');
+            var cronExpression = document.getElementById('cronExpressionInEditModal');
+            var inputValue = cronExpression.value;
+            try {
+                var parts = inputValue.trim().split(' ');
+            } catch { }
+            switch (selectedButton) {
+                case 'minute':
+                    newField = '<tr class="newStr">' +
+                        '<th>' +
+                        '0-59' + '</th >' + '<th class="symbols">' +
+                        'allowed values' + '</th >' + '< /tr>';
+                    $('#cronTable').append(newField);
+                    break;
+                case 'hour':
+                    newField = '<tr class="newStr">' +
+                        '<th>' +
+                        '0-23' + '</th >' + '<th class="symbols">' +
+                        'allowed values' + '</th >' + '< /tr>';
+                    $('#cronTable').append(newField);
+                    break;
+                case 'day':
+                    newField = '<tr class="newStr">' +
+                        '<th>' +
+                        '1-31' + '</th >' + '<th class="symbols">' +
+                        'allowed values' + '</th >' + '< /tr>';
+                    $('#cronTable').append(newField);
+                    break;
+                case 'month':
+                    newField = '<tr class="newStr"> ' +
+                        '<th>' +
+                        '1-12' + '</th >' + '<th class="symbols">' +
+                        'allowed values' + '</th >' + '< /tr>' +
+                        '<tr class="newStr">' +
+                        '<th>' +
+                        'jan-dec' + '</th >' + '<th class="symbols">' +
+                        'alternative single values' + '</th >' + '< /tr>';
+                    $('#cronTable').append(newField);
+                    break;
+                case 'weekday':
+                    newField = '<tr class="newStr">' +
+                        '<th>' +
+                        '0-6' + '</th >' + '<th class="symbols">' +
+                        'allowed values' + '</th >' + '< /tr>' +
+                        '<tr class="newStr">' +
+                        '<th>' +
+                        'sun-sat' + '</th >' + '<th class="symbols">' +
+                        'alternative single values' + '</th >' + '< /tr>';
+                    $('#cronTable').append(newField);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        /*
+        очень сильно потом
+        function highlightSelection(inputElement, startIndex = 0, endIndex = null) {
+            let text = inputElement.innerText;
+            let trimmedText = originalText.trim();
+            if (endIndex === null) {
+                endIndex = text.length;
+            }
+            let plainText = inputElement.innerText;
+            let before = plainText.slice(0, startIndex);
+            let toHighlight = plainText.slice(startIndex, endIndex);
+            let after = plainText.slice(endIndex);
+            let newContent = before +
+                `<div class="highlight" contenteditable="true">${toHighlight}</div>` +
+                after;
+            inputElement.innerHTML = newContent;
+        }
+        */
+        function removeTableField() {
+            $('.newStr').remove();
+        }
+
+        function clearSelection() {
+            var buttons = document.querySelectorAll('a');
+            buttons.forEach(function (button) {
+                button.classList.remove('selected');
+            });
+        }
+        function contains(target, test) {
+            return target.indexOf(test) !== -1;
+        }
+        NodeList.prototype.contains = HTMLCollection.prototype.contains = function (test) {
+            for (var i = 0; i < this.length; i++) {
+                if (contains(this[i].innerText, test)) return true;
+            }
+            return false;
+        };
+    </script>
+}

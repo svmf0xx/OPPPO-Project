@@ -1,0 +1,252 @@
+﻿﻿body {
+    background-color: #f0f0f0;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.swagger-ui .topbar {
+    background-color: #3e5f8a;
+    box-shadow: none;
+    border-bottom: 1px solid #34495e;
+    color: white;
+}
+
+    .swagger-ui .topbar .topbar-wrapper {
+        padding: 15px;
+        text-align: center;
+    }
+
+        .swagger-ui .topbar .topbar-wrapper .link {
+            color: white;
+            font-weight: bold;
+            text-decoration: none;
+            margin: 0 15px;
+            transition: opacity 0.3s ease;
+        }
+
+            .swagger-ui .topbar .topbar-wrapper .link:hover {
+                opacity: 0.8;
+            }
+
+.swagger-ui .info {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+    .swagger-ui .info .title {
+        color: #3e5f8a;
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+
+    .swagger-ui .info .description {
+        color: #555;
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+
+    .swagger-ui .info a {
+        color: #3e5f8a;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+
+        .swagger-ui .info a:hover {
+            color: #34495e;
+        }
+
+    .swagger-ui .info .contact {
+        margin-top: 20px;
+        text-align: center;
+    }
+
+        .swagger-ui .info .contact .name {
+            font-weight: bold;
+        }
+
+        .swagger-ui .info .contact .email {
+            color: #3e5f8a;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+            .swagger-ui .info .contact .email:hover {
+                color: #34495e;
+            }
+
+.swagger-ui .section {
+    margin-top: 30px;
+}
+
+.swagger-ui .opblock-tag {
+    background-color: #3e5f8a;
+    color: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    text-align: center;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+    .swagger-ui .opblock-tag h4 {
+        margin: 0;
+        font-size: 22px;
+    }
+
+.swagger-ui .opblock.opblock-tag-section {
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.swagger-ui .opblock-summary-path {
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+    .swagger-ui .opblock-summary-path a {
+        color: #3e5f8a;
+        text-decoration: none;
+        transition: opacity 0.3s ease;
+    }
+
+        .swagger-ui .opblock-summary-path a:hover {
+            opacity: 0.8;
+        }
+
+.swagger-ui .opblock-section .opblock-controls button {
+    background-color: #3e5f8a;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-right: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+    .swagger-ui .opblock-section .opblock-controls button:hover {
+        background-color: #34495e;
+    }
+
+.swagger-ui .opblock-section .opblock-section-header {
+    background-color: #3e5f8a;
+    color: white;
+    padding: 15px;
+    margin-bottom: 10px;
+    text-align: center;
+    border-radius: 5px;
+}
+
+.swagger-ui .opblock .opblock-body {
+    background-color: #f0f0f0;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.swagger-ui .opblock .opblock-section .opblock-description {
+    margin-bottom: 0;
+}
+
+.swagger-ui .opblock .opblock-section .opblock-section-header .opblock-section-header-method {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.swagger-ui .opblock .opblock-section .opblock-section-header .opblock-section-header-path {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.swagger-ui .tooltip-inner {
+    max-width: none;
+    background-color: #3e5f8a;
+    color: white;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.swagger-ui .dialog-ux .modal {
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.swagger-ui .dialog-ux .modal-content {
+    background-color: #fff;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 600px;
+    width: 80%;
+    max-height: 80%;
+    overflow-y: auto;
+}
+
+.swagger-ui .dialog-ux .modal-header {
+    background-color: #2ecc71;
+    color: white;
+    padding: 15px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+    .swagger-ui .dialog-ux .modal-header h4 {
+        margin: 0;
+        font-size: 24px;
+    }
+
+.swagger-ui .dialog-ux .modal-footer {
+    background-color: #f0f0f0;
+    padding: 15px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.swagger-ui .opblock-tag-section .opblock-tag:hover {
+    background-color: #4a69a1 !important;
+}
+
+.swagger-ui .opblock-title {
+    color: white !important;
+}
+
+.swagger-ui .btn.try-out__btn {
+    color: white !important;
+}
+
+.swagger-ui .models h4 {
+    background-color: #3e5f8a;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-align: center;
+}
+
+    .swagger-ui .models h4:hover {
+        background-color: #4a69a1 !important;
+    }
+
+    .swagger-ui .models h4 .models-control {
+        color: white;
+    }
+
+        .swagger-ui .models h4 .models-control:hover {
+            color: white;
+            background-color: #4a69a1 !important;
+        }
